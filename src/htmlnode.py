@@ -1,4 +1,5 @@
-from textnode import *
+from textnode import TextNode, TextType
+from functions import split_nodes_delimiter
 
 class HTMLNode():
     def __init__(self, tag=None, value=None, children=None, props=None):
@@ -29,7 +30,7 @@ class LeafNode(HTMLNode):
         return(f"LeafNode({self.tag}, {self.value}, {self.children}, {self.props})")
 
     def to_html(self):
-        if not self.value:
+        if not self.value and self.tag != "img":
             raise ValueError("LeafNode is missing 'value' attribute")
         if self.tag == None:
             return f"{self.value}"
@@ -70,5 +71,16 @@ def text_node_to_html_node(text_node):
         return LeafNode("b", text_node.text)
     elif text_node.text_type == TextType.ITALIC_TEXT:
         return LeafNode("i", text_node.text)
+    elif text_node.text_type == TextType.CODE_TEXT:
+        return LeafNode("code", text_node.text)
+    elif text_node.text_type == TextType.LINK:
+        if text_node.url == None or text_node.url == "":                  # Add a check to see if the url is a valid url
+            raise ValueError("Link type text nodes require a URL prop")
+        return LeafNode("a", text_node.text, {"href": text_node.url})
+    elif text_node.text_type == TextType.IMAGE:
+        return LeafNode("img", "", {"src": text_node.url, "alt": text_node.text})
+    else:
+        raise Exception("TextType of text node is invalid")
+    
     
     

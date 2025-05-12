@@ -89,6 +89,16 @@ class TestHTMLNode(unittest.TestCase):
         self.assertEqual(html_node.tag, "i")
         self.assertEqual(html_node.value, "Italic node testing")
 
+    def test_text_to_html_link(self):
+        node = TextNode("Link node testing", TextType.LINK, "www.google.com")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.to_html(), '<a href="www.google.com">Link node testing</a>')
+
+    def test_text_to_html_image(self):
+        node = TextNode("cute kitty", TextType.IMAGE, "www.pictures.com/cute_kitty")
+        html_node = text_node_to_html_node(node)
+        self.assertEqual(html_node.to_html(), '<img src="www.pictures.com/cute_kitty" alt="cute kitty"></img>')
+
 class ExpectedFailureTestCase(unittest.TestCase):
     @unittest.expectedFailure
         

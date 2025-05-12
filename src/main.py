@@ -1,4 +1,6 @@
-from textnode import *
+from textnode import TextType, TextNode
+from htmlnode import HTMLNode, LeafNode, ParentNode, text_node_to_html_node
+from functions import *
 
 def main():
     testObj = TextNode("Testing", "text")
