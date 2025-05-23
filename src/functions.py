@@ -1,4 +1,5 @@
 from textnode import TextNode, TextType
+import re
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     if delimiter == "`":
@@ -12,6 +13,8 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if old_node.text_type != text_type.NORMAL_TEXT:
             new_nodes.append(old_node)
             continue
+        if old_node.text.count(delimiter) < 2:
+            raise Exception(f"Invalid markdown: One or more delimiters are missing from the string. Delimiter = '{delimiter}'")
         split_node = old_node.text.split(delimiter)
         for i in range(0, len(split_node)):
             if i % 2 == 0:
@@ -21,13 +24,18 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
     return new_nodes
         
         
-        
+def extract_markdown_images(text):
+    matches = re.findall(r"!\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches
 
-"""
-    For each old node:
-    If the text type is NOT normal text, simply add it to the new nodes list and move on
-    If it is normal, search for the delimiter, split the sentence starting there and ending after the next delimiter,
-    and append those sentences to the new_nodes list. But the sentences have to be converted into a TextNode object.
-    The delimiter words would be textnodes with the textype of the delimiter. The non-delimiter words would be texttypes of normal text.
+def extract_markdown_links(text):
+    matches = re.findall(r"(?<!!)\[([^\[\]]*)\]\(([^\(\)]*)\)", text)
+    return matches
 
-"""
+def split_nodes_link(old_nodes):
+    new_nodes = []
+    for i in range(len(old_nodes)):
+        links = extract_markdown_links(old_nodes[i].text)
+        for i in range(len(links)):
+            pass
+    
