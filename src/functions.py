@@ -34,8 +34,49 @@ def extract_markdown_links(text):
 
 def split_nodes_link(old_nodes):
     new_nodes = []
+
+    # Run this function on each node that is inputted, whether it's one or more
     for i in range(len(old_nodes)):
+
+        # If the text is empty or non-existent, skip this node
+        if not old_nodes[i].text or old_nodes[i].text == "":
+            continue
+
+        # Extract all the links present in the string
         links = extract_markdown_links(old_nodes[i].text)
-        for i in range(len(links)):
-            pass
-    
+
+        # If there are no links found, simply keep the string as is
+        if len(links) == 0:
+            new_nodes.append(TextNode(old_nodes[i].text, TextType.NORMAL_TEXT))
+            continue
+
+        # Go through a loop for as many times as there are links found
+        for v in range(len(links)):
+            alt_text, url = links[v][0], links[v][1]
+            
+            # If it's on the first iteration of the loop, run this specific code:
+            # It splits the string where the link is found, then adds the text prior to the link as well as the link
+            # as nodes to the new_nodes list
+            if v == 0:
+                split_string = old_nodes[i].text.split(f"[{alt_text}]({url})")
+                new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
+                new_nodes.append(TextNode(links[v][0], TextType.LINK, links[v][1]))
+                
+                # If we found the last link of the string, return the final text of the string (if it isn't empty)
+                if v == len(links) - 1:
+                    if split_string[1].strip() != "":
+                        new_nodes.append(TextNode(split_string[1], TextType.NORMAL_TEXT))
+                continue
+
+            # If it's on any iteration after the first, this code will allow 
+            # for further splitting of the second half of the string
+            # It does the same thing as the previous code, just working with a different variable
+            split_string = split_string[v].split(f"[{alt_text}]({url})")
+            new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
+            new_nodes.append(TextNode(links[v][0], TextType.LINK, links[v][1]))
+
+            # If we found the last link of the string, return the final text of the string (if it isn't empty)
+            if v == len(links) - 1:
+                    if split_string[1].strip() != "":
+                        new_nodes.append(TextNode(split_string[1], TextType.NORMAL_TEXT))
+    return new_nodes

@@ -57,9 +57,23 @@ class TestFunctions(unittest.TestCase):
         text = "This text contains no links at all!"
         self.assertListEqual([], extract_markdown_links(text))
 
-    def test_split_link(self):
-        node = TextNode("This text has a [link](https://www.google.com)", TextType.NORMAL_TEXT)
-        print(split_nodes_link([node]))
+    def test_split_link_two_links(self):
+        node = TextNode("This text has a [link](https://www.google.com) in it. Here is a [second link](https://www.this.com)", TextType.NORMAL_TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertListEqual(
+            [
+                TextNode("This text has a ", TextType.NORMAL_TEXT),
+                TextNode("link", TextType.LINK, "https://www.google.com"),
+                TextNode(" in it. Here is a ", TextType.NORMAL_TEXT),
+                TextNode("second link", TextType.LINK, "https://www.this.com")
+            ], 
+            new_nodes
+        )
+
+    def test_split_link_empty_string(self):
+        node = TextNode("", TextType.NORMAL_TEXT)
+        new_nodes = split_nodes_link([node])
+        self.assertEqual(new_nodes, [])
 
 class ExpectedFailureTestCase(unittest.TestCase):
     @unittest.expectedFailure
