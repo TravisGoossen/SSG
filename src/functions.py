@@ -39,7 +39,7 @@ def split_nodes_link(old_nodes):
     for i in range(len(old_nodes)):
 
         # If the text is empty or non-existent, skip this node
-        if not old_nodes[i].text or old_nodes[i].text == "":
+        if not old_nodes[i].text or old_nodes[i].text.strip() == "":
             continue
 
         # Extract all the links present in the string
@@ -59,7 +59,8 @@ def split_nodes_link(old_nodes):
             # as nodes to the new_nodes list
             if v == 0:
                 split_string = old_nodes[i].text.split(f"[{alt_text}]({url})")
-                new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
+                if split_string[0].strip() != "":
+                    new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
                 new_nodes.append(TextNode(links[v][0], TextType.LINK, links[v][1]))
                 
                 # If we found the last link of the string, return the final text of the string (if it isn't empty)
@@ -71,12 +72,51 @@ def split_nodes_link(old_nodes):
             # If it's on any iteration after the first, this code will allow 
             # for further splitting of the second half of the string
             # It does the same thing as the previous code, just working with a different variable
-            split_string = split_string[v].split(f"[{alt_text}]({url})")
-            new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
+            split_string = split_string[1].split(f"[{alt_text}]({url})")
+            if split_string[0].strip() != "":
+                new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
             new_nodes.append(TextNode(links[v][0], TextType.LINK, links[v][1]))
 
             # If we found the last link of the string, return the final text of the string (if it isn't empty)
             if v == len(links) - 1:
+                    if split_string[1].strip() != "":
+                        new_nodes.append(TextNode(split_string[1], TextType.NORMAL_TEXT))
+    return new_nodes
+
+def split_nodes_image(old_nodes):
+    new_nodes = []
+
+    for i in range(len(old_nodes)):
+
+        if not old_nodes[i].text or old_nodes[i].text.strip() == "":
+            continue
+
+        images = extract_markdown_images(old_nodes[i].text)
+
+        if len(images) == 0:
+            new_nodes.append(TextNode(old_nodes[i].text, TextType.NORMAL_TEXT))
+            continue
+
+        for v in range(len(images)):
+            alt_text, url = images[v][0], images[v][1]
+            
+            if v == 0:
+                split_string = old_nodes[i].text.split(f"![{alt_text}]({url})")
+                if split_string[0].strip() != "":
+                    new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
+                new_nodes.append(TextNode(images[v][0], TextType.IMAGE, images[v][1]))
+                
+                if v == len(images) - 1:
+                    if split_string[1].strip() != "":
+                        new_nodes.append(TextNode(split_string[1], TextType.NORMAL_TEXT))
+                continue
+
+            split_string = split_string[1].split(f"![{alt_text}]({url})")
+            if split_string[0].strip() != "":
+                new_nodes.append(TextNode(split_string[0], TextType.NORMAL_TEXT))
+            new_nodes.append(TextNode(images[v][0], TextType.IMAGE, images[v][1]))
+
+            if v == len(images) - 1:
                     if split_string[1].strip() != "":
                         new_nodes.append(TextNode(split_string[1], TextType.NORMAL_TEXT))
     return new_nodes
