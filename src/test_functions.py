@@ -1,7 +1,8 @@
 import unittest
 
 from textnode import TextNode, TextType
-from functions import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_link, split_nodes_image, text_to_textnodes
+from functions import split_nodes_delimiter, extract_markdown_images, extract_markdown_links,\
+                      split_nodes_link, split_nodes_image, text_to_textnodes, markdown_to_blocks
 
 class TestFunctions(unittest.TestCase):
 
@@ -250,6 +251,47 @@ just as scary as this ![tiger](www.animalPics.net/tiger)", TextType.NORMAL_TEXT)
         nodes_list = text_to_textnodes([text])
         self.assertTrue(len(nodes_list) < 1)
 
+    def test_markdown_to_blocks(self):
+        md = """
+Here is the _first_ block.
+
+This is a **second** block.
+Still second block!
+
+And finally, a `third` block.
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertListEqual(
+            [
+                "Here is the _first_ block.",
+                "This is a **second** block.\nStill second block!",
+                "And finally, a `third` block."
+            ],
+            blocks
+        )
+        
+
+    def test_markdown_to_blocks_emptiness(self):
+        md = """
+Here is a block, followed by lots of space.
+
+
+
+
+
+
+
+
+And finally more text!
+"""
+        blocks = markdown_to_blocks(md)
+        self.assertListEqual(
+            [
+                "Here is a block, followed by lots of space.",
+                "And finally more text!"
+            ],
+            blocks
+        )
 
 class ExpectedFailureTestCase(unittest.TestCase):
     @unittest.expectedFailure
