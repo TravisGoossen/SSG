@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from functions import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_link, split_nodes_image
+from functions import split_nodes_delimiter, extract_markdown_images, extract_markdown_links, split_nodes_link, split_nodes_image, text_to_textnodes
 
 class TestFunctions(unittest.TestCase):
 
@@ -214,6 +214,42 @@ just as scary as this ![tiger](www.animalPics.net/tiger)", TextType.NORMAL_TEXT)
             ],
             new_nodes
         )
+
+    def test_text_to_nodes(self):
+        text = TextNode("This _text_ has some **markdown** embedded in it. Go to this [markdown website](www.markdown.com) to learn the syntax.\
+ This screenshot might ![help](www.help.com). Lastly, `some code`", TextType.NORMAL_TEXT)
+        nodes_list = text_to_textnodes([text])
+        self.assertTrue(
+            nodes_list[0].text_type == TextType.NORMAL_TEXT and
+            nodes_list[1].text_type == TextType.ITALIC_TEXT and
+            nodes_list[2].text_type == TextType.NORMAL_TEXT and
+            nodes_list[3].text_type == TextType.BOLD_TEXT and
+            nodes_list[4].text_type == TextType.NORMAL_TEXT and
+            nodes_list[5].text_type == TextType.LINK and
+            nodes_list[6].text_type == TextType.NORMAL_TEXT and
+            nodes_list[7].text_type == TextType.IMAGE and
+            nodes_list[8].text_type == TextType.NORMAL_TEXT and
+            nodes_list[9].text_type == TextType.CODE_TEXT
+        )
+
+    def test_text_to_nodes_b2b_bold(self):
+        text = TextNode("This text has **b2b****bold** `words!`", TextType.NORMAL_TEXT)
+        nodes_list = text_to_textnodes([text])
+        self.assertListEqual(
+            [
+                TextNode("This text has ", TextType.NORMAL_TEXT),
+                TextNode("b2b", TextType.BOLD_TEXT),
+                TextNode("bold", TextType.BOLD_TEXT),
+                TextNode("words!", TextType.CODE_TEXT)
+            ],
+            nodes_list
+        )
+    
+    def test_text_to_nodes_empty(self):
+        text = TextNode("       ", TextType.NORMAL_TEXT)
+        nodes_list = text_to_textnodes([text])
+        self.assertTrue(len(nodes_list) < 1)
+
 
 class ExpectedFailureTestCase(unittest.TestCase):
     @unittest.expectedFailure

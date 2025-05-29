@@ -13,7 +13,7 @@ def split_nodes_delimiter(old_nodes, delimiter, text_type):
         if old_node.text_type != text_type.NORMAL_TEXT:
             new_nodes.append(old_node)
             continue
-        if old_node.text.count(delimiter) < 2:
+        if old_node.text.count(delimiter) >= 1 and old_node.text.count(delimiter) < 2:
             raise Exception(f"Invalid markdown: One or more delimiters are missing from the string. Delimiter = '{delimiter}'")
         split_node = old_node.text.split(delimiter)
         for i in range(0, len(split_node)):
@@ -47,7 +47,7 @@ def split_nodes_link(old_nodes):
 
         # If there are no links found, simply keep the string as is
         if len(links) == 0:
-            new_nodes.append(TextNode(old_nodes[i].text, TextType.NORMAL_TEXT))
+            new_nodes.append(TextNode(old_nodes[i].text, old_nodes[i].text_type))
             continue
 
         # Go through a loop for as many times as there are links found
@@ -94,7 +94,7 @@ def split_nodes_image(old_nodes):
         images = extract_markdown_images(old_nodes[i].text)
 
         if len(images) == 0:
-            new_nodes.append(TextNode(old_nodes[i].text, TextType.NORMAL_TEXT))
+            new_nodes.append(TextNode(old_nodes[i].text, old_nodes[i].text_type))
             continue
 
         for v in range(len(images)):
@@ -120,3 +120,11 @@ def split_nodes_image(old_nodes):
                     if split_string[1].strip() != "":
                         new_nodes.append(TextNode(split_string[1], TextType.NORMAL_TEXT))
     return new_nodes
+
+def text_to_textnodes(text):
+    nodes = split_nodes_delimiter(text, "**", TextType.BOLD_TEXT)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC_TEXT)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE_TEXT)
+    nodes = split_nodes_link(nodes)
+    nodes = split_nodes_image(nodes)
+    return nodes
